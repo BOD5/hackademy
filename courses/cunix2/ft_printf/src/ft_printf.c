@@ -76,15 +76,24 @@ int     magic_print(char *tmp, int flags[], int width)
     char    first = ' ';
     char    *sp = NULL;
     int     len = my_strlen(tmp);
+    int     num = 0;
+    char    *str = NULL;
 
-    if(flags[1] && !flags[2])
+    if(flags[1])
         first = '+';
-    
-    if ((flags[1] || flags[2]) && my_atoi(tmp) < 0)
+    if(flags[3])
+        space = '0';
+
+    if (flags[1] || flags[2] || flags[3])
     {
-        first = '-';
-        tmp = my_itoa(-my_atoi(tmp));
-        len--;
+        num = my_atoi(tmp);
+        str = my_itoa(num);
+        if (num < 0)
+        {
+            first = '-';
+            str = my_itoa(-num);
+            len--;
+        }
     }
     if (width - len > 0)
     {
@@ -97,7 +106,7 @@ int     magic_print(char *tmp, int flags[], int width)
         if (flags[1] || flags[2])
         {
             write(1, &first, 1);
-            write(1, tmp, len);
+            write(1, str, len);
             if(sp)
             {
                 write(1, &sp[1], my_strlen(&sp[1]));
@@ -116,7 +125,7 @@ int     magic_print(char *tmp, int flags[], int width)
     }
     else
     {
-        if (flags[1] || flags[2])
+        if (flags[1] || flags[2] || first == '-')
         {
             write(1, &first, 1);
             if(sp)
@@ -124,6 +133,7 @@ int     magic_print(char *tmp, int flags[], int width)
                 write(1, &sp[1], my_strlen(&sp[1]));
                 count += my_strlen(&sp[1]);
             }
+            write(1, str, len);
         }
         else 
         {
@@ -132,10 +142,12 @@ int     magic_print(char *tmp, int flags[], int width)
                 write(1, &sp[0], my_strlen(&sp[0]));
                 count += my_strlen(&sp[0]);
             }
+            write(1, tmp, len);
         }
-        write(1, tmp, len);
     }
     count += len;
+    if (str)
+        free(str);
     if (sp)
         free(sp);
     return count;
@@ -185,7 +197,7 @@ int     ft_printf(const char *format, ...)
                 minus_f = 1;
                 i++;
             }
-            if (format[i] == '0' && !minus_f)
+            if (format[i] == '0')
             {
                 if(!minus_f)
                     zero_f = 1;
@@ -222,9 +234,12 @@ int     ft_printf(const char *format, ...)
                 break;
             case 'c':
                 ch = va_arg(args, int);
+                tmp = (char*)malloc(sizeof(char) * 2);
+                tmp[0]= ch;
+                tmp[1] = '\0';
                 for (int q = 1; q < 4; q++)
                     flags[q] = 0;
-                len = magic_print(&ch, flags, width);
+                len = magic_print(tmp, flags, width);
                 count += len;
                 break;
             case 'i':
