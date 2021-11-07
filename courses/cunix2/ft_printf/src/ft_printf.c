@@ -1,12 +1,11 @@
-#include <stdarg.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
+#include "libftprintf.h"
+#include <limits.h>
 
 unsigned int  my_strlen (char * str) {
-    unsigned int  len = 0;
-  
-    while(*str++)
+    unsigned int    len = 0;
+    int             i = -1;
+
+    while(str[++i] > 0)
     {
         len++;
     }
@@ -39,23 +38,20 @@ int     get_len(int n)
 }
 
 char    *my_itoa(int nmb) {
-    int     a = nmb;
-    int     i = 0;
-    int     j = 0;
-    char    ch;
-    int     minus = 0;
-    int     len = get_len(nmb);;
-    char    *tmp = (char*)malloc((len + 1) * sizeof(char));
+    unsigned int    a = nmb < 0 ? -nmb : nmb;
+    int             i = 0;
+    int             j = 0;
+    char            ch;
+    int             minus = 0;
+    int             len = get_len(nmb);;
+    char            *tmp = (char*)malloc((len + 1) * sizeof(char));
 
-    if (a < 0)
-    {
-        a *= -1;
+    if (nmb < 0)
         minus = 1;
-    }
     do 
     {
         tmp[i++] = a % 10 + '0';
-    }     while ((a /= 10) > 0);
+    } while ((a /= 10) > 0);
     if(minus)
     {
         tmp[i++] = '-';
@@ -157,6 +153,7 @@ int     ft_printf(const char *format, ...)
     int     plus_f;
     int     sp_f;
     int     zero_f;
+    int     d = 0;
 
     va_list args;
 
@@ -208,13 +205,16 @@ int     ft_printf(const char *format, ...)
             switch (format[i])
             {
             case 'd':
-                tmp = my_itoa(va_arg(args, int));
+                d = va_arg(args, int);
+                tmp = my_itoa(d);
                 len = magic_print(tmp, flags, width);
                 count += len;
                 free(tmp);
                 break;
             case 's':
                 tmp = va_arg(args, char*);
+                if(!tmp)
+                    break;
                 for (int q = 1; q < 4; q++)
                     flags[q] = 0;
                 len = magic_print(tmp, flags, width);
